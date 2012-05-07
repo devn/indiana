@@ -1,8 +1,8 @@
 (ns walton.scraper
   (:require [net.cgrand.enlive-html :as e]
-            [clojure.java.io        :as io]
-            [clojure.string         :as string]
-            [clojure.set            :as s]))
+            [clojure.java.io :as io]
+            [clojure.string :as string]
+            [clojure.set :as s]))
 
 (def dates-url "http://clojure-log.n01se.net/date/")
 
@@ -51,7 +51,7 @@
 (defn get-missing-logfiles []
   (if-not (empty? missing-local-logfiles)
     (doseq [log missing-local-logfiles]
-      (println "Downloading" log "...")
+      (println (str "Downloading " log "..."))
       (let [log-data (slurp (str dates-url log))]
         (spit (io/file "logs" log) log-data)))))
 
@@ -104,6 +104,8 @@
    (map scrape-log-node-without-sexp (get-conversation-nodes f))))
 
 (comment
+  (set! *print-level* 1)
+  (set! *print-length* 1)
   (def lf (last local-logfiles))
   (def node (first (e/select (e/html-resource lf) [:p])))
   (e/select (e/html-resource lf) [:p :> [e/any-node (e/but-node [:a e/first-child])]]))

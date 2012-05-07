@@ -1,5 +1,6 @@
 (ns walton.cheat
-  (:require [net.cgrand.enlive-html :as e]
+  (:require [clojure-cheatsheets.generator :as cs]
+            [net.cgrand.enlive-html :as e]
             [clojure.java.io :as io]
             [clj-http.client :as client]))
 

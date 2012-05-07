@@ -5,6 +5,10 @@
                  [ibdknox/clojail "0.5.2"]
                  [accession "0.1.1"]
                  [hiccup "1.0.0-SNAPSHOT"]
-                 [clj-http "0.3.3"]]
+                 [clj-http "0.3.3"]
+                 [clojure-cheatsheets "1.0"]
+                 [yokogiri "0.0.2"]]
+  :dev-dependencies [[clj-ns-browser "1.1.0"]
+                     [midje "1.3.2-alpha1"]]
   :main walton.core
-  :jvm-opts ["-Xmx2G" "-Xms1G" "-server"] )
+  :jvm-opts ["-Xmx2G" "-Xms1G" "-server"])
