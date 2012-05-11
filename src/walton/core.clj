@@ -1,5 +1,6 @@
 (ns walton.core
-  (:use [clojail core testers])
+  (:use [clojail.core]
+        [clojail.testers])
   (:require [clojure.java.io :as io]
             [accession.core :as redis]
             [walton.scraper :as scrape]
@@ -17,7 +18,9 @@
 (defn not-empty? [x]
   (not (empty? x)))
 
-(defn has-sexp? [m]
+(defn has-sexp?
+  "Checks that an s-expression exists on a map"
+  [m]
   (not-empty? (:sexp m)))
 
 (defn events-with-sexps [f]
@@ -43,11 +46,11 @@
             (redis/with-connection c (add-single-sexp s)))
           (catch java.lang.Throwable t))))))
 
-(def all-passing-sexps
-  (redis/with-connection c (redis/hgetall "pass")))
-
 (def all-passing-sexp-keys
   (redis/with-connection c (redis/hkeys "pass")))
+
+(def all-passing-sexps
+  (redis/with-connection c (redis/hgetall "pass")))
 
 (defn search-sexps [s]
   (filter #(re-find (re-pattern s) %) all-passing-sexps))
@@ -55,25 +58,37 @@
 (defn find-examples-for [s]
   (filter #(re-find (re-pattern s) %) all-passing-sexp-keys))
 
+(defn find-examples-where-val-eq [s]
+  (filter #(= s (second %)) (partition 2 all-passing-sexps)))
+
+(defn find-examples-where-val-sort-of [s]
+  (filter #(re-find (re-pattern s) (second %))
+          (partition 2 all-passing-sexps)))
+
 (defn print-examples-for [s]
   (doseq [sexp (shuffle (find-examples-for s))]
     (println sexp)))
 
+(defn walton
+  ([s]
+     (doseq [sexp (find-examples-for s)]
+       (println sexp)))
+  ([s lim]
+     (doseq [sexp (take lim (shuffle (find-examples-for s)))]
+       (println sexp))))
+
+(defn notlaw
+  ([s]
+     (doseq [v (find-examples-where-val-eq s)]
+       (println (first v))))
+  ([s lim]
+     (doseq [v (take lim (shuffle (find-examples-where-val-eq s)))]
+       (println (first v)))))
+
+(defn notlaw-plus [s lim]
+  (doseq [v (take lim (shuffle (find-examples-where-val-sort-of s)))]
+    (println (first v))))
+
 (defn get-answer [s]
   (redis/with-connection c
     (redis/hget "pass" s)))
-
-(comment
-  {:Someone-in-IRC "You should make a Rich Hickey markov bot."
-   :Me "Maybe"}
-  (filter #(= "rhickey" (:nickname %)))
-
-  (def redis-results
-    (partition 2 (map #(s/replace % #"^\s+\d+\)\s+" "")
-                      (let [f "/Users/plato/redis-results.txt"]
-                        (with-open [f (io/reader (io/file f))]
-                          (doall (line-seq f)))))))
-
-  (require '[clojure.string :as s])
-  (s/triml "  fsdjai")
-  )

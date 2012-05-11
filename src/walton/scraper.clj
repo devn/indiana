@@ -48,8 +48,12 @@
    (set (butlast (sort remote-logfiles)))
    (set (map #(.getName %) local-logfiles))))
 
+(defn missing-logfiles? []
+  (when-not (empty? missing-local-logfiles)
+    true))
+
 (defn get-missing-logfiles []
-  (if-not (empty? missing-local-logfiles)
+  (if (missing-logfiles?)
     (doseq [log missing-local-logfiles]
       (println (str "Downloading " log "..."))
       (let [log-data (slurp (str dates-url log))]
@@ -61,8 +65,10 @@
 (defn text-for [node kw]
   (first (e/texts (e/select node [kw]))))
 
+(def empty-string "")
+
 (defn trim-nickname [s]
-  (if s (string/replace s #": " "")))
+  (if s (string/replace s #": " empty-string)))
 
 (defn trim-content [s]
   (string/triml (string/trim-newline s)))
