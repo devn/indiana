@@ -1,16 +1,17 @@
-(ns walton.html
+(ns walton.server
   (:use [noir.core]
-        [hiccup core page form])
+        [hiccup core page form]
+        [clojail.core :only (safe-read)])
   (:require [clojure.pprint :as pp]
             [noir.server :as server]
-            [walton.core :as core] 
+            [walton.core :as core]
             [walton.views.common :as common]))
 
 (server/load-views "src/walton/views")
 
 (defn format-code [code]
   (pp/with-pprint-dispatch pp/code-dispatch
-    (read-string code)))
+    (safe-read code)))
 
 (defn search [results]
   (for [result results]
@@ -48,7 +49,7 @@
 (defpage [:post "/search/value"] {:keys [query]}
   (common/layout
    [:h1 (str "\"" query "\"" " examples")]
-   [:dl (search (core/walton-html query))]))
+   [:dl (search (core/notlaw-html query))]))
 
 (defn -main [& m]
   (let [mode (keyword (or (first m) :dev))

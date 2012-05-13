@@ -114,6 +114,10 @@
   ([s] (find-examples-by-input s))
   ([s lim] (take lim (shuffle (find-examples-by-input s)))))
 
+(defn notlaw-html
+  ([s] (find-examples-where-val-sort-of s))
+  ([s lim] (take lim (shuffle (find-examples-where-val-sort-of s)))))
+
 (defn notlaw
   ([s] (doseq [v (find-examples-where-val-eq s)]
          (println (first v))))
