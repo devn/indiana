@@ -1,0 +1,32 @@
+h1 {
+    font-size: 2.5em;
+    padding: 0px 0px 20px 20px;
+}
+
+pre {
+    padding: 10px;
+    margin: 5px;
+}
+
+div#search-input {
+    padding: 0px 0px 20px 20px;    
+}
+
+div#search-value {
+    padding: 0px 0px 20px 20px;    
+}
+
+dl {
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0px 0px 20px 20px;
+}
+
+dt {
+    color: #aaa;
+    background-color: #eee;
+}
+
+dd {
+    color: #999;
+}

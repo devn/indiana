@@ -4,11 +4,11 @@
                  [paddleguru/enlive "1.2.0-alpha1"]
                  [ibdknox/clojail "0.5.2"]
                  [accession "0.1.1"]
-                 [hiccup "1.0.0-SNAPSHOT"]
+                 [noir "1.3.0-beta6"]
+                 ;; [compojure "1.1.0-SNAPSHOT"]
+                 ;; [hiccup "1.0.0"]
                  [clj-http "0.3.3"]
-                 [clojure-cheatsheets "1.0"]
                  [yokogiri "0.0.2"]]
-  :dev-dependencies [[clj-ns-browser "1.1.0"]
-                     [midje "1.3.2-alpha1"]]
+  :dev-dependencies [[midje "1.3.2-alpha1"]]
   :main walton.core
   :jvm-opts ["-Xmx2G" "-Xms1G" "-server"])

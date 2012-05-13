@@ -1,5 +1,6 @@
 (ns walton.scraper
   (:require [net.cgrand.enlive-html :as e]
+            [yokogiri.core :as y]
             [clojure.java.io :as io]
             [clojure.string :as string]
             [clojure.set :as s]))
@@ -41,7 +42,9 @@
   (let [html-re #"\>(.*\.html)\<"]
     (map second (re-seq html-re (apply str (slurp dates-url))))))
 
-(def local-logfiles (rest (file-seq (io/file "logs"))))
+(def local-logfiles
+  (filter #(re-find #".*\.html$" (str %))
+          (file-seq (io/file "logs"))))
 
 (def missing-local-logfiles
   (s/difference
