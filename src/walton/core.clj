@@ -5,7 +5,6 @@
             [accession.core :as redis]
             [walton.scraper :as scrape]
             [walton.util :as util]
-            [walton.clojuredocs :as docs :only (what-now?)]
             [clojure.pprint :as pprint])
   (:gen-class))
 
@@ -95,10 +94,6 @@
   (filter #(re-find (re-pattern s) (second %))
           all-passing-sexp-groups))
 
-;; (defn print-examples-for [s]
-;;   (doseq [sexp (shuffle (find-examples-for s))]
-;;     (println sexp)))
-
 (defn starts-with-core-fn? [s]
   (let [core-fns (map (comp str first) (ns-publics 'clojure.core))]
     (some #(= % ((comp str first) (safe-read s)))
@@ -114,15 +109,15 @@
   ([s] (find-examples-by-input s))
   ([s lim] (take lim (shuffle (find-examples-by-input s)))))
 
-(defn notlaw-html
-  ([s] (find-examples-where-val-sort-of s))
-  ([s lim] (take lim (shuffle (find-examples-where-val-sort-of s)))))
-
 (defn notlaw
   ([s] (doseq [v (find-examples-where-val-eq s)]
          (println (first v))))
   ([s lim] (doseq [v (take lim (shuffle (find-examples-where-val-eq s)))]
              (println (first v)))))
+
+(defn notlaw-html
+  ([s] (find-examples-where-val-sort-of s))
+  ([s lim] (take lim (shuffle (find-examples-where-val-sort-of s)))))
 
 (defn notlaw-plus [s lim]
   (doseq [v (take lim (shuffle (find-examples-where-val-sort-of s)))]

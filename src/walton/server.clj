@@ -3,21 +3,25 @@
         [hiccup core page form]
         [clojail.core :only (safe-read)])
   (:require [clojure.pprint :as pp]
+            [clojure.string :as s]
             [noir.server :as server]
             [walton.core :as core]
             [walton.views.common :as common]))
 
 (server/load-views "src/walton/views")
 
+(defn fix-im-a-string [code]
+  (s/replace code #"^I'm a string: " ""))
+
 (defn format-code [code]
   (pp/with-pprint-dispatch pp/code-dispatch
-    (safe-read code)))
+    (fix-im-a-string code)))
 
 (defn search [results]
   (for [result results]
     (let [[k v] result]
-      (html [:dt [:pre {:class "brush: clojure;"} k]]
-            [:dd [:pre v]]))))
+      (html [:dt [:pre {:class "brush: clojure;"} (format-code k)]]
+            [:dd [:pre {:class "brush: clojure;"} (format-code v)]]))))
 
 (defpartial search-input [{:keys [query]}]
   (label "query" "Search by Input: ")
@@ -51,8 +55,7 @@
    [:h1 (str "\"" query "\"" " examples")]
    [:dl (search (core/notlaw-html query))]))
 
-(defn -main [& m]
-  (let [mode (keyword (or (first m) :dev))
+(defn -main [& m]  (let [mode (keyword (or (first m) :dev))
         port (Integer. (get (System/getenv) "PORT" "8080"))]
     (server/start port {:mode mode, :ns 'walton})))
 
