@@ -62,16 +62,14 @@
       (let [log-data (slurp (str dates-url log))]
         (spit (io/file "logs" log) log-data)))))
 
-(defn get-conversation-nodes [f]
+(defn get-lines [f]
   (e/select (e/html-resource f) [:p]))
 
 (defn text-for [node kw]
   (first (e/texts (e/select node [kw]))))
 
-(def empty-string "")
-
 (defn trim-nickname [s]
-  (if s (string/replace s #": " empty-string)))
+  (if s (string/replace s #": " "")))
 
 (defn trim-content [s]
   (string/triml (string/trim-newline s)))
@@ -81,13 +79,13 @@
     (if-not (empty? matches)
       matches)))
 
-(defn scrape-log-node-without-sexp [node]
+(defn scrape-log-line-without-sexp [node]
   (let [nickname (trim-nickname (text-for node :b))
         content  (trim-content  (last (:content node)))]
     {:nickname nickname
      :content content}))
 
-(defn scrape-log-node [node]
+(defn scrape-log-line [node]
   (let [nickname  (trim-nickname (text-for node :b))
         timestamp (text-for node :a)
         content   (trim-content (last (:content node)))]
@@ -104,13 +102,13 @@
     {}
     smaps)))
 
-(defn scrape-all-log-nodes [f]
+(defn scrape-all-log-lines [f]
   (fix-empty-nicknames
-   (map scrape-log-node (get-conversation-nodes f))))
+   (map scrape-log-line (get-lines f))))
 
-(defn scrape-all-log-nodes-without-sexps [f]
+(defn scrape-all-log-lines-without-sexps [f]
   (fix-empty-nicknames
-   (map scrape-log-node-without-sexp (get-conversation-nodes f))))
+   (map scrape-log-line-without-sexp (get-lines f))))
 
 (comment
   (set! *print-level* 1)
