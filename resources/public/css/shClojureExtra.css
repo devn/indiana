@@ -2,11 +2,11 @@
     opacity: 0.6 !important;
 }
 
-.clojure.syntaxhighlighter .invalid { 
+.clojure.syntaxhighlighter .invalid {
    color: yellow !important;
    background: red !important;
 }
 
-.clojure.syntaxhighlighter .quoted {      
+.clojure.syntaxhighlighter .quoted {
     font-style: italic !important;
 }

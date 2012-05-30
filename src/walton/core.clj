@@ -1,5 +1,6 @@
 (ns walton.core
   (:use [clojure.stacktrace :only (root-cause)]
+        [clojure.repl :only (doc)]
         [clojail.core :only (sandbox safe-read)]
         [clojail.testers :only (secure-tester p)])
   (:require [clojure.java.io :as io]
@@ -14,17 +15,20 @@
 ;; (set! *print-level* 10)
 
 (def ^{:private true} walton-tester
-  (conj secure-tester 'print-method (p "java.util.regex.Pattern")))
+  (conj secure-tester
+        'print-method
+        (p "java.util.regex.Pattern")))
 
-(def sb (sandbox walton-tester
-                 :transform pr-str))
+(def sb (sandbox walton-tester :transform pr-str))
 
 (defn has-sexp?
   "Checks that an s-expression exists on a map"
   [m]
   (util/not-empty? (:sexp m)))
 
-(defn get-lines-with-sexps [f]
+(defn get-lines-with-sexps
+  "Scrape lines from a logfile which have an s-expression."
+  [f]
   (filter has-sexp? (scrape/scrape-all-log-lines f)))
 
 (defn multiple-sexps?
@@ -58,71 +62,46 @@
              (catch TimeoutException _ "Execution timed out!")
              (catch Throwable t))))))
 
-;; (def all-passing-sexps
-;;   (redis/with-connection c (redis/hgetall "pass")))
+(defn fns-for-ns
+  "Returns a sequence of strings of the public functions in a
+  namespace."
+  [nspace]
+  (map (comp str first) (ns-publics nspace)))
 
-;; (def all-passing-sexp-groups
-;;   (partition 2 (redis/with-connection c
-;;                  (redis/hgetall "pass"))))
+(def clojure-core-fns (fns-for-ns 'clojure.core))
 
-;; (defn find-examples-by-input
-;;   "Find examples where the input matches and
-;;   return the matches.
+(defn starts-with-core-fn? [s]
+  (some #(= % ((comp str first) (safe-read s))) clojure-core-fns))
 
-;;   user> (find-examples-by-input \"input\")
-;;   => ((\"(input sexp)\", \"output\"), ...)"
-;;   [s]
-;;   (filter #(re-find (re-pattern s) (first %))
-;;           all-passing-sexp-groups))
+(defn contains-readable-core-fn? [s]
+  (let [safe-form-set (set (map str (flatten (safe-read s))))]
+    (some safe-form-set clojure-core-fns)))
 
-;; (defn find-examples-where-val-eq
-;;   "Find examples where the output is exactly the
-;;   string s.
+(defn shuffle-and-take [lim coll]
+  (take lim (shuffle coll)))
 
-;;   user> (find-examples-where-val-eq \"foo\")
-;;   => ((\"(str \"foo\")\", \"foo\"), ...)"
-;;   [s]
-;;   (filter #(= s (second %))
-;;           all-passing-sexp-groups))
+(defn print-sexp-map [sexp-map]
+  (let [{:keys [input value out]} sexp-map]
+    (println "Input:" input)
+    (println "Value:" value)
+    (println "Out:" out)
+    (println "---")))
 
-;; (defn find-examples-where-val-sort-of
-;;   "Find examples where the output is sort of
-;;   the string s
+(defn print-sexp-maps [query-fn query-str & [lim]]
+  (let [query-op (query-fn query-str)
+        query-results (if lim (shuffle-and-take lim query-op) query-op)]
+    (doseq [sexp-map query-results]
+      (print-sexp-map sexp-map))))
 
-;;   user> (find-examples-where-val-sort-of \"3\")
-;;   => ((\"(str \"3333\")\", \"3333\"), ...)"
-;;   [s]
-;;   (filter #(re-find (re-pattern s) (second %))
-;;           all-passing-sexp-groups))
+(defn resolve-query-fn [kw]
+  ((comp resolve symbol str) (str "db/exprs-where-" (name kw))))
 
-;; (defn starts-with-core-fn? [s]
-;;   (let [core-fns (map (comp str first) (ns-publics 'clojure.core))]
-;;     (some #(= % ((comp str first) (safe-read s)))
-;;           core-fns)))
+(defn walton [kw query-str & [lim]]
+  (print-sexp-maps (resolve-query-fn kw) query-str lim))
 
-;; (defn walton
-;;   ([s] (doseq [sexp (map first (db/find-examples-by-input s))]
-;;          (println sexp)))
-;;   ([s lim] (doseq [sexp (take lim (shuffle (map first (db/find-examples-by-input s))))]
-;;              (println sexp))))
-
-;; (defn walton-html
-;;   ([s] (db/find-examples-by-input s))
-;;   ([s lim] (take lim (shuffle (db/find-examples-by-input s)))))
-
-;; (defn notlaw
-;;   ([s] (doseq [v (find-examples-where-val-eq s)]
-;;          (println (first v))))
-;;   ([s lim] (doseq [v (take lim (shuffle (find-examples-where-val-eq s)))]
-;;              (println (first v)))))
-
-;; (defn notlaw-html
-;;   ([s] (find-examples-where-val-sort-of s))
-;;   ([s lim] (take lim (shuffle (find-examples-where-val-sort-of s)))))
-
-;; (defn notlaw-plus [s lim]
-;;   (doseq [v (take lim (shuffle (find-examples-where-val-sort-of s)))]
-;;     (println (first v))))
+(defn walton-html [kw query-str]
+  (let [query-op (resolve-query-fn kw)]
+    (query-op query-str)))
 
 (comment
   (def background-init-walton (.start (Thread. (fn [] (dorun (init-walton!))))))

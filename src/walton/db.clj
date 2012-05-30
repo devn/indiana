@@ -21,30 +21,26 @@
 (defn wildcardize-query [s]
   (str "%" s "%"))
 
-(defn find-examples-by-input [s]
-  (select expressions (where {:input [like (wildcardize-query s)]})))
+(defn exprs-where [k s]
+  (select expressions (where {k s})))
 
-(defn find-examples-where-input-eq [s]
-  (select expressions (where {:input s})))
+(defn exprs-where-like [k s]
+  (select expressions (where {k [like (wildcardize-query s)]})))
 
-(defn find-examples-where-val-eq [s]
-  (select expressions (where {:value s})))
+(defn exprs-where-input [s]
+  (exprs-where-like :input s))
 
-(defn find-examples-by-value [s]
-  (select expressions (where {:value [like (wildcardize-query s)]})))
+(defn exprs-where-input-eq [s]
+  (exprs-where :input s))
 
-(defn find-examples-by-out [s]
-  (select expressions (where {:out [like (wildcardize-query s)]})))
+(defn exprs-where-value [s]
+  (exprs-where-like :value s))
 
-(defn find-examples-where-out-eq [s]
-  (select expressions (where {:out s})))
+(defn exprs-where-value-eq [s]
+  (exprs-where :value s))
 
-(defn find-examples-by-value-or-out [s]
-  (select expressions
-    (where (or {:value [like (wildcardize-query s)]}
-               {:out [like (wildcardize-query s)]}))))
+(defn exprs-where-out [s]
+  (exprs-where-like :out s))
 
-(defn find-examples-where-val-or-out-eq [s]
-  (select expressions
-    (where (or {:value s}
-               {:out s}))))
+(defn exprs-where-out-eq [s]
+  (exprs-where :out s))

@@ -3,6 +3,15 @@ h1 {
     padding: 0px 0px 20px 20px;
 }
 
+a {
+    color: green;
+}
+
+a#search-again {
+    font-size 1.5em;
+    padding: 0px 0px 20px 20px;
+}
+
 pre {
     padding: 10px;
     margin: 5px;
@@ -16,6 +25,10 @@ div#search-value {
     padding: 0px 0px 20px 20px;
 }
 
+div#search-out {
+    padding: 0px 0px 20px 20px;
+}
+
 dl {
     margin-left: auto;
     margin-right: auto;
@@ -23,10 +36,11 @@ dl {
 }
 
 dt {
-    background-color: #eee;
+    /* background-color: #eee; */
 }
 
 dd {
     color: #999;
-    background-color: #eee;
+    /* background-color: #eee; */
+    border-bottom: 1px solid #ddd;
 }

@@ -38,21 +38,21 @@
            [(java.lang.StringBuilder.) '() :text 0]
            string)))
 
-(def remote-logfiles
+(defn remote-logfiles []
   (let [html-re #"\>(.*\.html)\<"]
     (map second (re-seq html-re (apply str (slurp dates-url))))))
 
-(def local-logfiles
+(defn local-logfiles []
   (filter #(re-find #".*\.html$" (str %))
           (file-seq (io/file "logs"))))
 
-(def missing-local-logfiles
+(defn missing-local-logfiles []
   (s/difference
-   (set (butlast (sort remote-logfiles)))
-   (set (map #(.getName %) local-logfiles))))
+   (set (butlast (sort (remote-logfiles))))
+   (set (map #(.getName %) (local-logfiles)))))
 
 (defn missing-logfiles? []
-  (when-not (empty? missing-local-logfiles)
+  (when-not (empty? (missing-local-logfiles))
     true))
 
 (defn get-missing-logfiles []
