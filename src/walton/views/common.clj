@@ -10,8 +10,8 @@
     (include-css "/css/global.css")
     (include-css "/css/shCoreDefault.css")
     (include-css "/css/shClojureExtra.css")
-    (include-js "/js/shCore.js")
-    (include-js "/js/shBrushClojure.js")
+    (include-js "/js/vendor/shCore.js")
+    (include-js "/js/vendor/shBrushClojure.js")
     [:script {:type "text/javascript"} "SyntaxHighlighter.defaults['gutter'] = false;"]
     [:script {:type "text/javascript"} "SyntaxHighlighter.defaults['collapse'] = false;"]
     [:script {:type "text/javascript"} "SyntaxHighlighter.defaults['toolbar'] = false;"]
