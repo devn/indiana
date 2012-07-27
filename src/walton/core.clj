@@ -1,6 +1,5 @@
 (ns walton.core
   (:use [clojure.stacktrace :only (root-cause)]
-        [clojure.repl :only (doc)]
         [clojail.core :only (sandbox safe-read)]
         [clojail.testers :only (secure-tester p)])
   (:require [clojure.java.io :as io]
