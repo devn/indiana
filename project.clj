@@ -5,7 +5,6 @@
                  [paddleguru/enlive "1.2.0-alpha1"]
                  [yokogiri "0.0.2"]
                  [ibdknox/clojail "0.5.2"]
-                 [accession "0.1.1"]
                  [noir "1.3.0-beta6"]
                  [korma "0.3.0-beta10"]
                  [postgresql "9.1-901-1.jdbc4"]
@@ -13,7 +12,8 @@
                                               javax.jms/jms
                                               com.sun.jdmk/jmxtools
                                               com.sun.jmx/jmxri]]
-                 [clj-http "0.3.3"]]
+                 [clj-http "0.3.3"]
+                 [org.clojure/data.json "0.1.2"]]
   :dev-dependencies [[midje "1.4.0"]]
   :main walton.core
   :jvm-opts ["-Xmx4G" "-Xms1G" "-server"])
