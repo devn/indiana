@@ -7,11 +7,7 @@
             [walton.scraper :as scrape]
             [walton.util :as util])
   (:import java.io.StringWriter
-           java.util.concurrent.TimeoutException)
-  (:gen-class))
-
-;; (set! *print-length* 10)
-;; (set! *print-level* 10)
+           java.util.concurrent.TimeoutException))
 
 (def ^{:private true} walton-tester
   (conj secure-tester
