@@ -44,3 +44,7 @@ dd {
     /* background-color: #eee; */
     border-bottom: 1px solid #ddd;
 }
+
+.syntaxhighlighter {
+    white-space: pre-wrap;
+}
