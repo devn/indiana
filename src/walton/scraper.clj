@@ -7,6 +7,30 @@
 
 (def dates-url "http://clojure-log.n01se.net/date/")
 
+(defn remote-logfiles []
+  (let [html-re #"\>(.*\.html)\<"]
+    (map second (re-seq html-re (apply str (slurp dates-url))))))
+
+(defn local-logfiles []
+  (filter #(re-find #".*\.html$" (str %))
+          (file-seq (io/file "logs"))))
+
+(defn missing-local-logfiles []
+  (s/difference
+   (set (butlast (sort (remote-logfiles))))
+   (set (map #(.getName %) (local-logfiles)))))
+
+(defn missing-logfiles? []
+  (when-not (empty? (missing-local-logfiles))
+    true))
+
+(defn get-missing-logfiles []
+  (if (missing-logfiles?)
+    (doseq [log missing-local-logfiles]
+      (println (str "Downloading " log "..."))
+      (let [log-data (slurp (str dates-url log))]
+        (spit (io/file "logs" log) log-data)))))
+
 (defn extract-expressions
   "Extracts sexps."
   [string]
@@ -37,30 +61,6 @@
               :else [exp exps state cnt]))
            [(java.lang.StringBuilder.) '() :text 0]
            string)))
-
-(defn remote-logfiles []
-  (let [html-re #"\>(.*\.html)\<"]
-    (map second (re-seq html-re (apply str (slurp dates-url))))))
-
-(defn local-logfiles []
-  (filter #(re-find #".*\.html$" (str %))
-          (file-seq (io/file "logs"))))
-
-(defn missing-local-logfiles []
-  (s/difference
-   (set (butlast (sort (remote-logfiles))))
-   (set (map #(.getName %) (local-logfiles)))))
-
-(defn missing-logfiles? []
-  (when-not (empty? (missing-local-logfiles))
-    true))
-
-(defn get-missing-logfiles []
-  (if (missing-logfiles?)
-    (doseq [log missing-local-logfiles]
-      (println (str "Downloading " log "..."))
-      (let [log-data (slurp (str dates-url log))]
-        (spit (io/file "logs" log) log-data)))))
 
 (defn get-lines [f]
   (e/select (e/html-resource f) [:p]))

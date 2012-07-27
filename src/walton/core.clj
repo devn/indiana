@@ -28,19 +28,24 @@
 
 (defn multiple-sexps?
   "Returns true or false if there is more than 1 s-expression for a
-  given log line."  [sexps]
+  given log line."
+  [sexps]
   (> (count sexps) 1))
 
 (defn run-sandboxed-sexp
   "Safely read a sexp and run it in the sandbox capturing the
   value. Captures *out* in case the expression being evaluated prints
   to *out*. Returns a map of the input, value, and out if there is any."
-  [sexp]
+  [nickname timestamp sexp]
   (with-open [writer (StringWriter.)]
     (let [bindings {#'*out* writer}
           value (sb (safe-read sexp) bindings)
           out (str writer)]
-      {:input sexp :value value :out out})))
+      {:input sexp,
+       :value value,
+       :out out,
+       :nickname nickname,
+       :timestamp timestamp})))
 
 (defn init-walton!
   "Scrape all logfiles, and for each log line that contains one or
@@ -50,30 +55,15 @@
   (doseq [f scrape/local-logfiles]
     (println (.getName f))
     (doseq [line (get-lines-with-sexps f)]
-      (let [sexps (:sexp line)]
-        (try (doseq [s sexps]
+      (let [{:keys [sexps nickname timestamp]} line]
+        (try (if (multiple-sexps? line)
+               (doseq [expression sexps]
+                 (db/insert-expression
+                  (run-sandboxed-sexp nickname timestamp expression)))
                (db/insert-expression
-                (run-sandboxed-sexp s)))
+                (run-sandboxed-sexp nickname timestamp sexps)))
              (catch TimeoutException _ "Execution timed out!")
              (catch Throwable t))))))
-
-(defn fns-for-ns
-  "Returns a sequence of strings of the public functions in a
-  namespace."
-  [nspace]
-  (map (comp str first) (ns-publics nspace)))
-
-(def clojure-core-fns (fns-for-ns 'clojure.core))
-
-(defn starts-with-core-fn? [s]
-  (some #(= % ((comp str first) (safe-read s))) clojure-core-fns))
-
-(defn contains-readable-core-fn? [s]
-  (let [safe-form-set (set (map str (flatten (safe-read s))))]
-    (some safe-form-set clojure-core-fns)))
-
-(defn shuffle-and-take [lim coll]
-  (take lim (shuffle coll)))
 
 (defn print-sexp-map [sexp-map]
   (let [{:keys [input value out]} sexp-map]
@@ -84,7 +74,7 @@
 
 (defn print-sexp-maps [query-fn query-str & [lim]]
   (let [query-op (query-fn query-str)
-        query-results (if lim (shuffle-and-take lim query-op) query-op)]
+        query-results (if lim (util/shuffle-and-take lim query-op) query-op)]
     (doseq [sexp-map query-results]
       (print-sexp-map sexp-map))))
 
@@ -94,13 +84,29 @@
 (defn walton [kw query-str & [lim]]
   (print-sexp-maps (resolve-query-fn kw) query-str lim))
 
-(defn walton-html [kw query-str]
-  (let [query-op (resolve-query-fn kw)]
-    (query-op query-str)))
+;; (defn walton-html [kw query-str]
+;;   (let [query-op (resolve-query-fn kw)]
+;;     (query-op query-str)))
+
+(defn walton-html-input [query-str]
+  (db/exprs-where-input query-str))
+
+(defn walton-html-value [query-str]
+  (db/exprs-where-value query-str))
+
+(defn walton-html-out [query-str]
+  (db/exprs-where-out query-str))
+
+(defn walton-html [kw query-str & [lim]]
+  (let [query-results ((resolve-query-fn kw) query-str)]
+    (if lim
+      (util/shuffle-and-take lim query-results)
+      query-results)))
 
 (comment
+  (set! *print-length* 10)
+  (set! *print-level* 10)
   (def background-init-walton (.start (Thread. (fn [] (dorun (init-walton!))))))
-
   (defn run-single-file-through-sandbox [f]
     (doseq [event (get-lines-with-sexps f)]
       (let [sexps (:sexp event)]
